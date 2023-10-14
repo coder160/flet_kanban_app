@@ -1,78 +1,19 @@
 import flet
-from flet import (
-    AlertDialog,
-    AppBar,
-    Column,
-    Container,
-    ElevatedButton,
-    Icon,
-    Page,
-    PopupMenuButton,
-    PopupMenuItem,
-    RoundedRectangleBorder,
-    Row,
-    TemplateRoute,
-    Text,
-    TextField,
-    UserControl,
-    View,
-    colors,
-    icons,
-    margin,
-    padding,
-    theme,
-)
+from flet import (AlertDialog, AppBar, Column, Container, ElevatedButton, Icon, Page, PopupMenuButton, PopupMenuItem,
+                  Row, TemplateRoute, Text, TextField, UserControl, View, colors, icons, margin, padding, theme)
 from src.memory_store import InMemoryStore
 from src.user import User
 from src.app_layout import AppLayout
 from src.board import Board
 from src.data_store import DataStore
-
-
-
-
-class Textos:
-    titulo_app = "Flet Kanban App"
-    login = "Log-in"
-    configuraciones = "Configuraciones"
-    titulo_appBar = "Kanban"
-    fuente_base = "Pacifico"
-    encabezado_tablero_demo = "Tablero Demo"
-    nuevo_usuario = "Ingrese su Usuario"
-    nuevo_password = "Ingrese su contraseña"
-    encabezado_nuevo_usuario = "Por favor ingrese su usuario y contraseña/password"
-    nuevo_tablero_nombre = "Nombre de Tablero Nuevo"
-    nuevo_tablero_boton_crear = "Crear"
-    encabezado_dialogo_nuevo_tablero = "Nombra tu nuevo tablero"
-    cerrando_modal = "Cerrando Modal"
-    boton_cerrar_modal = "Cancelar"
-    campo_nuevo_usuario = "Usuario"
-    campo_nuevo_password = "Contraseña"
-
-
-class Colores:
-    blue_grey_200 = colors.BLUE_GREY_200
-    fondo_pagina = colors.BLUE_GREY_200
-    boton_crear_tablero = colors.BLUE_200
-    bgc_appBar = colors.LIGHT_BLUE_ACCENT_700
-
-
-class Iconos:
-    appBar = icons.GRID_GOLDENRATIO_ROUNDED
-
-
-class Tamanos:
-    appBar = 100
-    tamano_appBar = 32
-    altura_appBar = 75
-
-class Rutas:
-    home = "/"
-
+from custom.rutas import Rutas
+from custom.textos import Textos
+from custom.colores import Colores
+from custom.tamanos import Tamanos
+from custom.iconos import Iconos
 
 class Entorno:
     usuario_actual = "current_user"
-
 
 class TrelloApp(UserControl):
     def __init__(self, page: Page, store: DataStore):
@@ -92,7 +33,7 @@ class TrelloApp(UserControl):
                             leading_width=Tamanos.appBar,
                             center_title=False,
                             toolbar_height=Tamanos.altura_appBar,
-                            bgcolor=Colores.bgc_appBar,
+                            bgcolor=Colores.fondo_appbar,
                             actions=[Container(content=PopupMenuButton(items=self.appbar_items),
                                                margin=margin.only(left=50, right=25))])
         self.page.appbar = self.appbar
@@ -105,10 +46,10 @@ class TrelloApp(UserControl):
     def initialize(self):
         self.page.views.clear()
         self.page.views.append(View(Rutas.home, [self.appbar, self.layout], 
-                                    padding=padding.all(0), bgcolor=Colores.blue_grey_200))
+                                    padding=padding.all(0), bgcolor=Colores.fondo_pagina))
         self.page.update()
-        if len(self.boards) == 0:
-            self.create_new_board(Textos.encabezado_tablero_demo)
+        #if len(self.boards) == 0:
+            #self.create_new_board(Textos.encabezado_tablero_demo)
         self.page.go(Rutas.home)
 
     def login(self, e):
@@ -155,9 +96,7 @@ class TrelloApp(UserControl):
 
     def add_board(self, e):
         def close_dlg(e):
-            if (hasattr(e.control, "text") 
-                and not e.control.text == Textos.boton_cerrar_modal) or (
-                    type(e.control) is TextField and e.control.value != ""):
+            if (hasattr(e.control, "text") and not e.control.text == Textos.boton_cerrar_modal) or (type(e.control) is TextField and e.control.value != ""):
                 self.create_new_board(dialog_text.value)
             dialog.open = False
             self.page.update()
@@ -173,7 +112,7 @@ class TrelloApp(UserControl):
                                 on_submit=close_dlg, 
                                 on_change=textfield_change)
         create_button = ElevatedButton(text=Textos.nuevo_tablero_boton_crear, 
-                                       bgcolor=Colores.boton_crear_tablero, 
+                                       bgcolor=Colores.btn_dialog_crear_tablero, 
                                        on_click=close_dlg, disabled=True)
         dialog = AlertDialog(title=Text(Textos.encabezado_dialogo_nuevo_tablero),
                              content=Column([dialog_text,
@@ -201,7 +140,7 @@ def main(page: Page):
     page.padding = 0
     page.theme = theme.Theme(font_family="Verdana")
     page.theme.page_transitions.windows = "cupertino"
-    page.fonts = {"Pacifico": "Pacifico-Regular.ttf"}
+    page.fonts = {"RobotoSlab": "https://github.com/google/fonts/raw/main/apache/robotoslab/RobotoSlab%5Bwght%5D.ttf"}
     page.bgcolor = Colores.fondo_pagina
     app = TrelloApp(page, InMemoryStore())
     page.add(app)

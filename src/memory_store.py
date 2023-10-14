@@ -42,8 +42,7 @@ class InMemoryStore(DataStore):
         return self.board_lists.get(board, [])
 
     def remove_list(self, board: int, id: int):
-        self.board_lists[board] = [
-            l for l in self.board_lists[board] if not l.board_list_id == id]
+        self.board_lists[board] = [l for l in self.board_lists[board] if not l.board_list_id == id]
 
     def add_user(self, user: "User"):
         self.users[user.name] = user
@@ -61,5 +60,4 @@ class InMemoryStore(DataStore):
         return self.items.get(board_list, [])
 
     def remove_item(self, board_list: int, id: int):
-        self.items[board_list] = [
-            i for i in self.items[board_list] if not i.item_id == id]
+        self.items[board_list] = [i for i in self.items[board_list] if not i.item_id == id]

@@ -1,19 +1,10 @@
+from flet import (DragTarget, Draggable, Container, Checkbox, Row, UserControl, Card, border_radius)
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from board_list import BoardList
-import itertools
-from flet import (
-    DragTarget,
-    Draggable,
-    Container,
-    Checkbox,
-    Row,
-    UserControl,
-    Card,
-    border_radius,
-)
 from src.data_store import DataStore
-
+import itertools
+from custom.tamanos import Tamanos
 
 class Item(UserControl):
     id_counter = itertools.count()
@@ -25,30 +16,22 @@ class Item(UserControl):
         self.list = list
         self.item_text = item_text
         self.card_item = Card(
-            content=Row(
-                [Container(
-                    content=Checkbox(label=f"{self.item_text}", width=200),
-                    border_radius=border_radius.all(5))],
-                width=200,
-                wrap=True
-            ),
+            content=Row([Container(content=Checkbox(label=f"{self.item_text}", 
+                                                    width=Tamanos.card_item_checkbox_altura),
+                                   border_radius=border_radius.all(Tamanos.card_item_borderadio))],
+                        width=Tamanos.card_item_ancho,
+                        wrap=True),
             elevation=1,
-            data=self.list
-        )
+            data=self.list)
 
     def build(self):
-
-        self.view = Draggable(
-            group="items",
-            content=DragTarget(
-                group="items",
-                content=self.card_item,
-                on_accept=self.drag_accept,
-                on_leave=self.drag_leave,
-                on_will_accept=self.drag_will_accept,
-            ),
-            data=self
-        )
+        self.view = Draggable(group="items",
+                              data=self,
+                              content=DragTarget(group="items",
+                                                 content=self.card_item,
+                                                 on_accept=self.drag_accept,
+                                                 on_leave=self.drag_leave,
+                                                 on_will_accept=self.drag_will_accept))
         return self.view
 
     def drag_accept(self, e):
@@ -56,16 +39,15 @@ class Item(UserControl):
 
         # skip if item is dropped on itself
         if (src.content.content == e.control.content):
-            self.card_item.elevation = 1
-            self.list.set_indicator_opacity(self, 0.0)
+            self.card_item.elevation = Tamanos.card_item_elevacionZ
+            self.list.set_indicator_opacity(self,Tamanos.card_item_opacidad)
             e.control.update()
             return
 
         # item dropped within same list but not on self
         if (src.data.list == self.list):
-            self.list.add_item(chosen_control=src.data,
-                               swap_control=self)
-            self.card_item.elevation = 1
+            self.list.add_item(chosen_control=src.data,swap_control=self)
+            self.card_item.elevation = Tamanos.card_item_elevacionZ
             e.control.update()
             return
 
@@ -73,17 +55,17 @@ class Item(UserControl):
         self.list.add_item(src.data.item_text, swap_control=self)
         # remove from the list to which draggable belongs
         src.data.list.remove_item(src.data)
-        self.list.set_indicator_opacity(self, 0.0)
-        self.card_item.elevation = 1
+        self.list.set_indicator_opacity(self,Tamanos.card_item_opacidad)
+        self.card_item.elevation = Tamanos.card_item_elevacionZ
         e.control.update()
 
     def drag_will_accept(self, e):
         if e.data == "true":
-            self.list.set_indicator_opacity(self, 1.0)
-        self.card_item.elevation = 20 if e.data == "true" else 1
+            self.list.set_indicator_opacity(self, Tamanos.card_item_opacidad)
+        self.card_item.elevation = Tamanos.card_item_elevacionZ_activo if e.data == "true" else Tamanos.card_item_elevacionZ
         e.control.update()
 
     def drag_leave(self, e):
-        self.list.set_indicator_opacity(self, 0.0)
-        self.card_item.elevation = 1
+        self.list.set_indicator_opacity(self, Tamanos.card_item_opacidad)
+        self.card_item.elevation = Tamanos.card_item_elevacionZ
         e.control.update()

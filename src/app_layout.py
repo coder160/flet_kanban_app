@@ -1,28 +1,12 @@
+from flet import (ButtonStyle, Column, Container, Control, IconButton, Page, PopupMenuButton, PopupMenuItem, Row,
+                  RoundedRectangleBorder, Text, TextButton, TextField, border, border_radius, colors, icons, padding)
 from src.board import Board
 from src.data_store import DataStore
 from src.sidebar import Sidebar
-from flet import (
-    ButtonStyle,
-    Column,
-    Container,
-    Control,
-    IconButton,
-    Page,
-    PopupMenuButton,
-    PopupMenuItem,
-    RoundedRectangleBorder,
-    Row,
-    Text,
-    TextButton,
-    TextField,
-    border,
-    border_radius,
-    colors,
-    icons,
-    padding,
-)
-
-
+from custom.colores import Colores
+from custom.textos import Textos
+from custom.tamanos import Tamanos
+from custom.iconos import Iconos
 
 class AppLayout(Row):
     def __init__(self, app, page: Page, store: DataStore, *args, **kwargs):
@@ -31,63 +15,50 @@ class AppLayout(Row):
         self.page = page
         self.page.on_resize = self.page_resize
         self.store: DataStore = store
-        self.toggle_nav_rail_button = IconButton(
-            icon=icons.ARROW_CIRCLE_LEFT,
-            icon_color=colors.BLUE_GREY_400,
-            selected=False,
-            selected_icon=icons.ARROW_CIRCLE_RIGHT,
-            on_click=self.toggle_nav_rail,
-        )
+        self.toggle_nav_rail_button = IconButton(icon=Iconos.nav_rail_izquierdo,icon_color=Colores.btn_regresar,
+                                                 selected=False,selected_icon=Iconos.nav_rail_derecho,
+                                                 selected_icon_color=Colores.btn_regresar,on_click=self.toggle_nav_rail,)
         self.sidebar = Sidebar(self, self.store, page)
-        self.members_view = Text("members view")
-        self.all_boards_view = Column(
-            [
-                Row(
-                    [
-                        Container(
-                            Text(value="Your Boards", style="headlineMedium"),
-                            expand=True,
-                            padding=padding.only(top=15),
-                        ),
-                        Container(
-                            TextButton(
-                                "Add new board",
-                                icon=icons.ADD,
-                                on_click=self.app.add_board,
-                                style=ButtonStyle(
-                                    bgcolor={
-                                        "": colors.BLUE_200,
-                                        "hovered": colors.BLUE_400,
-                                    },
-                                    shape={"": RoundedRectangleBorder(radius=3)},
-                                ),
-                            ),
-                            padding=padding.only(right=50, top=15),
-                        ),
-                    ]
-                ),
-                Row(
-                    [
-                        TextField(
-                            hint_text="Search all boards",
-                            autofocus=False,
-                            content_padding=padding.only(left=10),
-                            width=200,
-                            height=40,
-                            text_size=12,
-                            border_color=colors.BLACK26,
-                            focused_border_color=colors.BLUE_ACCENT,
-                            suffix_icon=icons.SEARCH,
-                        )
-                    ]
-                ),
-                Row([Text("No Boards to Display")]),
-            ],
-            expand=True,
-        )
+        self.members_view = Container(Text(value = Textos.vista_miembros,
+                                           color = Colores.texto_cuerpo,
+                                           style="headlineMedium"),
+                                      expand=True,
+                                      padding=padding.only(top=Tamanos.mis_tableros_padding))
+        self.all_boards_view = Column([
+            Row([
+                Container(
+                    Text(value=Textos.vista_tableros,
+                         color = Colores.texto_cuerpo,
+                         style="headlineMedium"),
+                    expand=True,
+                    padding=padding.only(top=Tamanos.mis_tableros_padding)),
+                Container(
+                    TextButton(
+                        Textos.nuevo_tablero_add,
+                        icon=Iconos.agregar_tablero,
+                        on_click=self.app.add_board,
+                        style=ButtonStyle(
+                            bgcolor={"": Colores.btn_agregar_tablero,"hovered": Colores.btn_agregar_tablero_hoover},
+                            shape={"": RoundedRectangleBorder(radius=Tamanos.btn_agregar_tablero_radio)})),
+                    padding=padding.only(right=Tamanos.btn_agregar_tablero_padding_R, 
+                                         top=Tamanos.btn_agregar_tablero_padding_L))]),
+            Row([
+                TextField(
+                    hint_text=Textos.barra_buscar_tableros,
+                    color = Colores.texto_cuerpo,
+                    autofocus=False,
+                    content_padding=padding.only(left=Tamanos.barra_buscar_tablero_padding),
+                    width=Tamanos.barra_buscar_tablero_ancho,
+                    height=Tamanos.barra_buscar_tablero_altura,
+                    text_size=Tamanos.barra_buscar_tablero_texto,
+                    border_color=Colores.barra_buscar_tablero_borde,
+                    focused_border_color=Colores.barra_buscar_tablero_focus,
+                    suffix_icon=Iconos.barra_buscar_tableros)]),
+            Row([Text(Textos.tablero_no_encontrado)])],
+            expand=True)
+        
         self._active_view: Control = self.all_boards_view
-
-        self.controls = [self.sidebar, self.toggle_nav_rail_button, self.active_view]
+        self.controls = [self.sidebar,self.toggle_nav_rail_button, self.active_view]
 
     @property
     def active_view(self):
@@ -131,60 +102,45 @@ class AppLayout(Row):
         self.page.update()
 
     def hydrate_all_boards_view(self):
-        self.all_boards_view.controls[-1] = Row(
-            [
+        self.all_boards_view.controls[-1] = Row([Container(
+            content=Row([
                 Container(
-                    content=Row(
-                        [
-                            Container(
-                                content=Text(value=b.name),
-                                data=b,
-                                expand=True,
-                                on_click=self.board_click,
-                            ),
-                            Container(
-                                content=PopupMenuButton(
-                                    items=[
-                                        PopupMenuItem(
-                                            content=Text(
-                                                value="Delete",
-                                                style="labelMedium",
-                                                text_align="center",
-                                            ),
-                                            on_click=self.app.delete_board,
-                                            data=b,
-                                        ),
-                                        PopupMenuItem(),
-                                        PopupMenuItem(
-                                            content=Text(
-                                                value="Archive",
-                                                style="labelMedium",
-                                                text_align="center",
-                                            ),
-                                        ),
-                                    ]
-                                ),
-                                padding=padding.only(right=-10),
-                                border_radius=border_radius.all(3),
-                            ),
-                        ],
-                        alignment="spaceBetween",
-                    ),
-                    border=border.all(1, colors.BLACK38),
-                    border_radius=border_radius.all(5),
-                    bgcolor=colors.WHITE60,
-                    padding=padding.all(10),
-                    width=250,
+                    content=Text(value=b.name),
                     data=b,
-                )
-                for b in self.store.get_boards()
-            ],
+                    expand=True,
+                    on_click=self.board_click),
+                Container(
+                    content=PopupMenuButton(
+                        items=[
+                            PopupMenuItem(
+                                content=Text(value=Textos.btn_eliminar_tablero,
+                                             style="labelMedium",
+                                             text_align="center"),
+                                             on_click=self.app.delete_board,
+                                             data=b),
+                            PopupMenuItem(),
+                            PopupMenuItem(
+                                content=Text(
+                                    value=Textos.btn_archivar_tablero,
+                                    style="labelMedium",
+                                    text_align="center"))]),
+                        padding=padding.only(right=Tamanos.btnes_accion_tablero_padding),
+                        border_radius=border_radius.all(Tamanos.btnes_accion_tablero_radio))],
+                alignment="spaceBetween"),
+            border=border.all(Tamanos.tablero_borde, colors.BLACK38),
+            border_radius=border_radius.all(Tamanos.tablero_borde_radio),
+            bgcolor=Colores.tablero_default_fondo,
+            padding=padding.all(Tamanos.tablero_padding_all),
+            width=Tamanos.tablero_ancho,
+            data=b)
+            for b in self.store.get_boards()],
             wrap=True,
         )
         self.sidebar.sync_board_destinations()
 
     def board_click(self, e):
-        self.sidebar.bottom_nav_change(self.store.get_boards().index(e.control.data))
+        self.sidebar.bottom_nav_change(
+            self.store.get_boards().index(e.control.data))
 
     def toggle_nav_rail(self, e):
         self.sidebar.visible = not self.sidebar.visible
